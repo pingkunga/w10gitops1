@@ -52,7 +52,7 @@ jobs:
                   git checkout tags/${{github.ref_name}}
                   git add manifest/prod/*
                   git commit -m "Update manifest "
-                  git push
+                  git push origin ${{github.ref_name}}
     # deploymentProd:
     #     needs: tagProd
     #     runs-on: ubuntu-latest
