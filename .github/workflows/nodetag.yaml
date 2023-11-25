@@ -38,4 +38,13 @@ jobs:
             
             - name: Echo Yaml After Replace
               run: |
-                echo cat javascript/manifest/prod/pingw91010.yaml
+                cat javascript/manifest/prod/pingw91010.yaml
+
+            - name: Commit & Push Manifest Changes (PROD)
+              run: |
+                  git config user.name "GitHub Actions"
+                  git config user.email "github-actions@users.noreply.github.com"
+                  git add manifest/prod/*
+                  git commit -m "Update manifest "
+                  git push
+          
