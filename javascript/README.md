@@ -44,7 +44,7 @@ kubectl run --rm -it --tty pingkungcurl1 -n group-1 --image=curlimages/curl --re
 
 ดูเพื่มเติ่ม https://github.com/pingkunga/k8s_IngSvcDeployment_Example/blob/main/javascript/README.md ตัวอย่างคล้ายๆกันใน Week ก่อน
 
-
+ 
 ## CI & CD
 
 * ไฟล์จะอยู่ที่ .github/workflows/node.yaml
