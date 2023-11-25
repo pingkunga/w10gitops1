@@ -1,0 +1,61 @@
+# CI CD 
+# For master branch
+# 1. Retag container image and push to docker hub
+# 2. Notification by email
+
+name: NODE_MAIN
+
+on:
+    #push:
+    #  branches: [ "main" ]
+    pull_request:
+      branches: [ "main" ]
+      types: [closed]
+env:
+    GITHUB_PR_NUMBER: ${{github.event.pull_request.number}}
+jobs:
+    retag:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+              working-directory: ./javascript # Here the path to the folder where package-lock.json is located.
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v3
+
+        - name: Get Image Name & Tag
+          id: get_image_name
+          uses: mikefarah/yq@master
+          with:
+            cmd: yq -r '.spec.template.spec.containers.[0].image' javascript/manifest/dev/pingw91010.yaml
+    
+        #https://stackoverflow.com/a/76371212/20000255
+        - name : Get YQ Result
+          run: |
+            echo ${{ steps.get_image_name.outputs.result }}
+
+        #docker login $REGISTRY_URL -u $USERNAME -p $PASSWORD
+        - name : docker retag
+          run: |
+              docker login ${{ vars.DOCKER_URL }} -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+              docker pull ${{ steps.get_image_name.outputs.result }}
+              echo "-----------------"
+              docker images
+              echo "-----------------"
+              docker tag ${{ steps.get_image_name.outputs.result }} ${{ secrets.DOCKERHUB_USERNAME }}/w91010:v${{env.GITHUB_PR_NUMBER}}
+              docker images
+              echo "-----------------"
+              docker push ${{ secrets.DOCKERHUB_USERNAME }}/w91010:v${{env.GITHUB_PR_NUMBER}}
+        #https://github.com/marketplace/actions/send-email
+        - name: Notify By Email
+          uses: dawidd6/action-send-mail@v3
+          with:
+            server_address: smtp.gmail.com
+            server_port: 465
+            username: ${{ secrets.EMAIL_USERNAME }}
+            password: ${{ secrets.EMAIL_PASSWORD }}
+            subject: 'Tag Success ${{ secrets.DOCKERHUB_USERNAME }}/w91010:v${{env.GITHUB_PR_NUMBER}}'
+            body: 'Tag Success ${{ secrets.DOCKERHUB_USERNAME }}/w91010:v${{env.GITHUB_PR_NUMBER}}'
+            from: ${{ secrets.EMAIL_USERNAME }}
+            to: ${{ secrets.EMAIL_TO_LIST }}
+            content_type: 'text/plain'
