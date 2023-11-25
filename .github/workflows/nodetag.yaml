@@ -1,0 +1,31 @@
+# CI CD for tag
+# 1. read imagename
+# 2. modify manifest
+# 3. deploy k8s
+# 4. notify email
+
+name: NODE_TAG
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+    tagAndDeploy:
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+              working-directory: ./javascript # Here the path to the folder where package-lock.json is located.
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+            
+            - name: Set variables
+              run: |
+                  VER=$(cat version.txt)
+                  echo "VERSION=$VER" >> $GITHUB_ENV
+            
+            - name: Echo version
+              run: |
+                  echo ${{ env.VERSION }}
