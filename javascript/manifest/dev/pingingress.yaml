@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pingingressw10
+  annotations:
+    #nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  labels:
+    name: pingw10
+  namespace: group-1-dev
+spec:
+  #Ref 
+  #- https://kubernetes.github.io/ingress-nginx/examples/rewrite/
+  #- https://kubernetes.github.io/ingress-nginx/user-guide/ingress-path-matching/
+  ingressClassName: nginx
+  rules:
+  - host: tcc-01.th1.proen.cloud
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/group-1/w10-tcc231010(/|$)(.*)"
+        backend:
+          service:
+            name: pingw10-svc
+            port: 
+              number: 80

@@ -1,0 +1,16 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: pingw10
+  name:  pingw10-svc
+  namespace: group-1-dev
+spec:
+  selector:
+    app:  pingw10
+  type:  ClusterIP
+  ports:
+  - name:  map-to-app
+    port: 80
+    protocol: TCP
+    targetPort: 3000

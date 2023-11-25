@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: pingw10
+  name: pingw10
+  namespace: group-1-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pingw10
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: pingw10
+    spec:
+      containers:
+        #- image: pingkunga/w91010
+        - image: pingkunga/w10:6d40a6
+          imagePullPolicy: Always
+          name: w10
+          resources: {}
+          envFrom:
+            - configMapRef:
+                name: pingconfig
+            - secretRef:
+                name: pingsecret
+status: {}

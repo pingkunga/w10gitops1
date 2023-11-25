@@ -1,0 +1,125 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node_CI_CD
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+env:
+  CLUSTER_NAME: https://tcc-01.th1.proen.cloud/api/ 
+
+jobs:
+  build-docker-image:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./javascript # Here the path to the folder where package-lock.json is located.
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        node-version: [18.x]
+    #    node-version: [14.x, 16.x]
+    #    node-version: [14.x, 16.x, 18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: pwd 0
+      run: pwd
+    #- name: Use Node.js ${{ matrix.node-version }}
+    #  uses: actions/setup-node@v3
+    #  with:
+    #    node-version: ${{ matrix.node-version }}
+    #    cache: 'npm'
+    #    cache-dependency-path: javascript/package.json
+    #- name: run npm commands
+    #  run: | 
+    #    pwd
+    #    npm install
+    #    npm run build --if-present
+    #    npm test
+
+    # https://github.com/marketplace/actions/short-sha
+    - uses: benjlevesque/short-sha@v2.2
+      id: short-sha
+      with:
+        length: 6
+    - run: echo $SHA
+      env:
+        SHA: ${{ steps.short-sha.outputs.sha }}
+    - run: echo $SHA
+      env:
+        SHA: ${{ env.SHA }}
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: ./javascript
+        push: true
+        #tags: pingkunga/w91010_${{ matrix.node-version }}:latest
+        #tags: pingkunga/w91010:latest
+        #tags: pingkunga/w91010:${{ github.sha }}
+        #tags: pingkunga/w91010:${{ env.SHA }}
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/w10:${{ env.SHA }}
+
+    - name: Replace Docker Image with Commit SHA
+      id: Replace_Docker_Image
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq -i '.spec.template.spec.containers.[0].image = "pingkunga/w10:${{ env.SHA }}"' javascript/manifest/dev/pingw91010.yaml
+
+    - name: Commit & Push Manifest Changes
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "github-actions@users.noreply.github.com"
+        git add manifest/dev/*
+        git commit -m "Update manifest"
+        git push
+
+  deployment:
+    needs: build-docker-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Authenticate to TCC01'
+        run: |
+          kubectl config set-cluster tcc-01 --server=${{ env.CLUSTER_NAME }} 
+          kubectl config set-context tcc-01 --cluster=tcc-01
+          kubectl config set-credentials tcc-01-user --token=${{ secrets.TCC01_TOKEN }}
+          kubectl config set-context tcc-01 --user=tcc-01-user
+          kubectl config use-context tcc-01
+
+      - uses: actions/checkout@v3
+
+      - name: 'Deploy Dev'
+        run: |
+          pwd 
+          cat javascript/manifest/dev/pingw91010.yaml
+          kubectl apply -f javascript/manifest/dev/pingconfig.yaml
+          kubectl apply -f javascript/manifest/dev/pingsecret.yaml
+          kubectl apply -f javascript/manifest/dev/pingw91010.yaml
+          kubectl apply -f javascript/manifest/dev/pingw91010-svc.yaml
+          kubectl apply -f javascript/manifest/dev/pingingress.yaml
+      
+      #https://github.com/marketplace/actions/send-email
+      - name: Notify By Email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: 'Deployment Success'
+          body: 'Deployment Success'
+          from: ${{ secrets.EMAIL_USERNAME }}
+          to: ${{ secrets.EMAIL_TO_LIST }}
+          content_type: 'text/plain'
