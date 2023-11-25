@@ -2,12 +2,12 @@ kind: Service
 apiVersion: v1
 metadata:
   labels:
-    app: pingw91010
-  name:  pingw91010-svc
+    app: pingw10
+  name:  pingw10-svc
   namespace: group-1-prod
 spec:
   selector:
-    app:  pingw91010
+    app:  pingw10
   type:  ClusterIP
   ports:
   - name:  map-to-app
