@@ -1,1 +1,1 @@
-pingkunga/w10:v5
+pingkunga/w10:v6
