@@ -16,6 +16,8 @@ env:
 jobs:
     retag:
         runs-on: ubuntu-latest
+        permissions:
+          contents: write
         defaults:
             run:
               working-directory: ./javascript # Here the path to the folder where package-lock.json is located.
