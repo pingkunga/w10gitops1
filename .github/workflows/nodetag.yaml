@@ -29,3 +29,13 @@ jobs:
             - name: Echo version
               run: |
                   echo ${{ env.VERSION }}
+        
+            - name: Replace Docker Image with Commit SHA
+              id: Replace_Docker_Image
+              uses: mikefarah/yq@master
+              with:
+                cmd: yq -i '.spec.template.spec.containers.[0].image = "${{ env.VERSION }}"' javascript/manifest/prod/pingw91010.yaml
+            
+            - name: Echo Yaml After Replace
+              run: |
+                echo cat javascript/manifest/prod/pingw91010.yaml
