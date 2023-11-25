@@ -19,7 +19,7 @@ spec:
     http:
       paths:
       - pathType: Prefix
-        path: "/group-1/w10-tcc231010(/|$)(.*)"
+        path: "/group-1/w10p-tcc231010(/|$)(.*)"
         backend:
           service:
             name: pingw10-svc
