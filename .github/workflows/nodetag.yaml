@@ -38,7 +38,7 @@ jobs:
             
             - name: Echo Yaml After Replace
               run: |
-                cat javascript/manifest/prod/pingw91010.yaml
+                cat manifest/prod/pingw91010.yaml
 
             - name: Commit & Push Manifest Changes (PROD)
               run: |
