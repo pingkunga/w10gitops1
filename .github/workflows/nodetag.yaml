@@ -47,14 +47,31 @@ jobs:
               run: |
                 cat manifest/prod/pingw91010.yaml
 
+            #Note: GitHub ไม่ยอมให้ Commit เข้า Tag ที่มีอยู่แล้ว จึงต้องสร้าง Tag ใหม่ก่อน
             - name: Commit & Push Manifest Changes (PROD)
               run: |
                   git config user.name "GitHub Actions"
                   git config user.email "github-actions@users.noreply.github.com"
-                  git checkout tags/${{github.ref_name}}-prod
+                  git tag ${{github.ref_name}}-prod
                   git add manifest/prod/*
                   git commit -m "Update manifest Prod "
                   git push origin ${{github.ref_name}}-prod
+            
+           #Create Release
+            - name: Create Release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                tag_name: ${{github.ref_name}}-prod
+                release_name: Release ${{github.ref_name}}-prod
+                draft: false
+                prerelease: false
+                body: |
+                  Release ${{github.ref_name}}-prod
+                commitish: ${{github.ref}}
+            
     # deploymentProd:
     #     needs: tagProd
     #     runs-on: ubuntu-latest
