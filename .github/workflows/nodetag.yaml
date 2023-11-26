@@ -13,8 +13,8 @@ on:
 # on:
 #   release:
 #     types: [published]
-env:
-    CLUSTER_NAME: https://tcc-01.th1.proen.cloud/api/ 
+#env:
+#    CLUSTER_NAME: https://tcc-01.th1.proen.cloud/api/ 
     
 jobs:
     tagProd:
@@ -71,39 +71,41 @@ jobs:
                 token: ${{ secrets.GITHUB_TOKEN }}
                 tag_name: ${{github.ref_name}}-prod
             
-    # deploymentProd:
-    #     needs: tagProd
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - name: 'Authenticate to TCC01'
-    #           run: |
-    #             kubectl config set-cluster tcc-01 --server=${{ env.CLUSTER_NAME }} 
-    #             kubectl config set-context tcc-01 --cluster=tcc-01
-    #             kubectl config set-credentials tcc-01-user --token=${{ secrets.TCC01_TOKEN }}
-    #             kubectl config set-context tcc-01 --user=tcc-01-user
-    #             kubectl config use-context tcc-01
+    deploymentProd:
+        needs: tagProd
+        runs-on: ubuntu-latest
+        steps:
+            - name: 'Authenticate to TCC01'
+              run: |
+                kubectl config set-cluster tcc-01 --server=${{ secrets.TCC01_URL }} 
+                kubectl config set-context tcc-01 --cluster=tcc-01
+                kubectl config set-credentials tcc-01-user --token=${{ secrets.TCC01_TOKEN }}
+                kubectl config set-context tcc-01 --user=tcc-01-user
+                kubectl config use-context tcc-01
             
-    #         - uses: actions/checkout@v3
-            
-    #         - name: 'Deploy Dev'
-    #           run: |
-    #             pwd 
-    #             kubectl apply -f javascript/manifest/prod/pingconfig.yaml
-    #             kubectl apply -f javascript/manifest/prod/pingsecret.yaml
-    #             kubectl apply -f javascript/manifest/prod/pingw91010.yaml
-    #             kubectl apply -f javascript/manifest/prod/pingw91010-svc.yaml
-    #             kubectl apply -f javascript/manifest/prod/pingingress.yaml
+            - uses: actions/checkout@v3
+              with:
+                ref: ${{github.ref_name}}-prod
+
+            - name: 'Deploy Prod'
+              run: |
+                pwd 
+                kubectl apply -f javascript/manifest/prod/pingconfig.yaml
+                kubectl apply -f javascript/manifest/prod/pingsecret.yaml
+                kubectl apply -f javascript/manifest/prod/pingw91010.yaml
+                kubectl apply -f javascript/manifest/prod/pingw91010-svc.yaml
+                kubectl apply -f javascript/manifest/prod/pingingress.yaml
                   
-    #         #https://github.com/marketplace/actions/send-email
-    #         - name: Notify By Email
-    #           uses: dawidd6/action-send-mail@v3
-    #           with:
-    #             server_address: smtp.gmail.com
-    #             server_port: 465
-    #             username: ${{ secrets.EMAIL_USERNAME }}
-    #             password: ${{ secrets.EMAIL_PASSWORD }}
-    #             subject: 'Deployment Prod Success'
-    #             body: 'Deployment Prod Success'
-    #             from: ${{ secrets.EMAIL_USERNAME }}
-    #             to: ${{ secrets.EMAIL_TO_LIST }}
-    #             content_type: 'text/plain'      
+            #https://github.com/marketplace/actions/send-email
+            - name: Notify By Email
+              uses: dawidd6/action-send-mail@v3
+              with:
+                server_address: smtp.gmail.com
+                server_port: 465
+                username: ${{ secrets.EMAIL_USERNAME }}
+                password: ${{ secrets.EMAIL_PASSWORD }}
+                subject: 'Deployment Prod Success'
+                body: 'Deployment Prod Success'
+                from: ${{ secrets.EMAIL_USERNAME }}
+                to: ${{ secrets.EMAIL_TO_LIST }}
+                content_type: 'text/plain'      
