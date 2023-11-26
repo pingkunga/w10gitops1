@@ -9,8 +9,8 @@ on:
   pull_request:
     branches: [ "develop" ]
 
-env:
-  CLUSTER_NAME: https://tcc-01.th1.proen.cloud/api/ 
+#env:
+#  CLUSTER_NAME: https://tcc-01.th1.proen.cloud/api/ 
 
 jobs:
   build-docker-image:
@@ -92,7 +92,7 @@ jobs:
     steps:
       - name: 'Authenticate to TCC01'
         run: |
-          kubectl config set-cluster tcc-01 --server=${{ env.CLUSTER_NAME }} 
+          kubectl config set-cluster tcc-01 --server=${{ secrets.TCC01_URL }} 
           kubectl config set-context tcc-01 --cluster=tcc-01
           kubectl config set-credentials tcc-01-user --token=${{ secrets.TCC01_TOKEN }}
           kubectl config set-context tcc-01 --user=tcc-01-user
