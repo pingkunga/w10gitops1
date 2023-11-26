@@ -118,8 +118,8 @@ jobs:
           server_port: 465
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: 'Deployment Success'
-          body: 'Deployment Success'
+          subject: 'Deployment Dev Success'
+          body: 'Deployment Dev Success'
           from: ${{ secrets.EMAIL_USERNAME }}
           to: ${{ secrets.EMAIL_TO_LIST }}
           content_type: 'text/plain'
